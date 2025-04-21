@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Skannaa Lippu</title>
+
+  <link rel="manifest" href="manifest.json" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      background: black;
+      color: white;
+    }
+
+    video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      z-index: 0;
+      background: black;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 1rem;
+      pointer-events: none;
+    }
+
+    .top-text {
+      background: rgba(0,0,0,0.4);
+      border-radius: 12px;
+      padding: 0.5rem 1rem;
+      font-size: 1.1rem;
+      pointer-events: none;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.5);
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      max-width: 90%;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 1rem;
+      font-size: 1.4rem;
+    }
+
+    .info {
+      display: grid;
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    .info span {
+      font-weight: bold;
+      color: #93c5fd;
+    }
+
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.6rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .btn:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+<body>
+
+  <video id="video" autoplay muted playsinline></video>
+
+  <div class="overlay">
+    <div class="top-text">Näytä lippu kameralle</div>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h2>🎫 Lippu tunnistettu</h2>
+      <div id="modal-data" class="info"></div>
+      <button id="ok-btn" class="btn">OK</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { BrowserMultiFormatReader } from 'https://cdn.jsdelivr.net/npm/@zxing/browser@latest/+esm';
+
+    const video = document.getElementById('video');
+    const modal = document.getElementById('modal');
+    const modalData = document.getElementById('modal-data');
+    const okBtn = document.getElementById('ok-btn');
+
+    const codeReader = new BrowserMultiFormatReader();
+    let canScan = true;
+
+    async function startScanner() {
+      try {
+        await codeReader.decodeFromVideoDevice(null, video, (result, err) => {
+          if (result && canScan) {
+            canScan = false;
+            showResult(result.getText());
+          }
+        });
+      } catch (e) {
+        alert("Kameran käyttö epäonnistui: " + e.message);
+      }
+    }
+
+    function showResult(rawData) {
+      const parts = rawData.split(';');
+      const [fname, lname, seat, ticket] = parts;
+
+      modalData.innerHTML = `
+        <div><span>Etunimi:</span> ${fname || '-'}</div>
+        <div><span>Sukunimi:</span> ${lname || '-'}</div>
+        <div><span>Istumapaikka:</span> ${seat || '-'}</div>
+        <div><span>Lipun numero:</span> ${ticket || '-'}</div>
+      `;
+
+      modal.classList.add('active');
+    }
+
+    okBtn.addEventListener('click', () => {
+      modal.classList.remove('active');
+      canScan = true;
+    });
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("🚫 Tämä selain ei tue kameran käyttöä. Käytä Chromea tai Safariä.");
+    } else {
+      startScanner();
+    }
+  </script>
+</body>
+</html>

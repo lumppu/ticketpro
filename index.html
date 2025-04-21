@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <title>Modern Boarding Pass</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+
+  <link rel="manifest" href="manifest.json" />
+
+  <style>
+    body {
+      font-family: 'Roboto Condensed', sans-serif;
+      background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+      padding: 2rem;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    form input {
+      width: 100%;
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .boarding-pass {
+      display: flex;
+      flex-direction: row;
+      margin-top: 2rem;
+      background: rgba(255,255,255,0.8);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid #a5b4fc;
+    }
+
+    .left, .right {
+      padding: 1.5rem;
+      flex: 1;
+    }
+
+    .left {
+      border-right: 2px dashed #94a3b8;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .airline-logo {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #1e3a8a;
+      margin-bottom: 1rem;
+    }
+
+    .airline-logo::before {
+      content: "🛫 ";
+    }
+
+    .details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      row-gap: 0.6rem;
+      column-gap: 1rem;
+      font-size: 1rem;
+    }
+
+    .details div {
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .label {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-weight: 400;
+    }
+
+    .barcode img {
+      max-width: 100%;
+      height: auto;
+      margin-top: 1rem;
+    }
+
+    .print-btn {
+      margin-top: 2rem;
+      width: 100%;
+      padding: 1rem;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      font-size: 1.1rem;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+      .container {
+        box-shadow: none;
+      }
+      form, .print-btn, h1 {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎟️ Luo oma boarding pass</h1>
+    <form id="pass-form">
+      <input type="text" id="fname" placeholder="Etunimi" required>
+      <input type="text" id="lname" placeholder="Sukunimi" required>
+      <input type="text" id="seat" placeholder="Istumapaikka (esim. 14A)" required>
+      <button type="submit" class="print-btn">Luo ja tulosta</button>
+      <a href="/scanner.html">Siirry skaneeriin</a>
+    </form>
+
+    <div class="boarding-pass" id="boarding-pass" style="display:none">
+      <div class="left">
+        <div>
+          <div class="airline-logo">Aurora Airlines</div>
+          <div class="details">
+            <div>
+              <div class="label">Nimi</div>
+              <div id="full-name"></div>
+            </div>
+            <div>
+              <div class="label">Istumapaikka</div>
+              <div id="seat-number"></div>
+            </div>
+            <div>
+              <div class="label">Lähtö</div>
+              <div>HEL</div>
+            </div>
+            <div>
+              <div class="label">Määränpää</div>
+              <div>JFK</div>
+            </div>
+            <div>
+              <div class="label">Portti</div>
+              <div>C7</div>
+            </div>
+            <div>
+              <div class="label">Aika</div>
+              <div>17:35</div>
+            </div>
+            <div>
+              <div class="label">Lento</div>
+              <div>AA421</div>
+            </div>
+            <div>
+              <div class="label">Lippu #</div>
+              <div id="ticket-number"></div>
+            </div>
+          </div>
+        </div>
+        <div class="barcode">
+          <img id="barcode-img" src="" alt="PDF417 Barcode">
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="airline-logo" style="font-size:1.2rem;">Aurora ✦ Boarding</div>
+        <div class="details">
+          <div>
+            <div class="label">Matkustaja</div>
+            <div id="full-name-2"></div>
+          </div>
+          <div>
+            <div class="label">Istu.</div>
+            <div id="seat-number-2"></div>
+          </div>
+          <div>
+            <div class="label">Lento</div>
+            <div>AA421</div>
+          </div>
+          <div>
+            <div class="label">Portti</div>
+            <div>C7</div>
+          </div>
+          <div>
+            <div class="label">Aika</div>
+            <div>17:35</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('pass-form');
+    const passDiv = document.getElementById('boarding-pass');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const fname = document.getElementById('fname').value.trim();
+      const lname = document.getElementById('lname').value.trim();
+      const seat = document.getElementById('seat').value.trim();
+      const ticket = 'AA' + Math.floor(100000 + Math.random() * 900000);
+
+      document.getElementById('full-name').innerText = fname + ' ' + lname;
+      document.getElementById('full-name-2').innerText = fname + ' ' + lname;
+      document.getElementById('seat-number').innerText = seat;
+      document.getElementById('seat-number-2').innerText = seat;
+      document.getElementById('ticket-number').innerText = ticket;
+
+      const barcodeData = encodeURIComponent(`${fname};${lname};${seat};${ticket}`);
+      const barcodeUrl = `https://barcode.orcascan.com/?type=pdf417&data=${barcodeData}`;
+      document.getElementById('barcode-img').src = barcodeUrl;
+
+      passDiv.style.display = 'flex';
+
+      setTimeout(() => window.print(), 500);
+    });
+  </script>
+</body>
+</html>
