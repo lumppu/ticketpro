@@ -2,14 +2,10 @@
 <html lang="fi">
 <head>
   <meta charset="UTF-8">
-  <title>Modern Boarding Pass</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
-
-  <link rel="manifest" href="manifest.json" />
-
+  <title>Moderni Boarding Pass</title>
   <style>
     body {
-      font-family: 'Roboto Condensed', sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
       background: linear-gradient(135deg, #dbeafe, #e0f2fe);
       padding: 2rem;
       margin: 0;
@@ -41,12 +37,12 @@
 
     .boarding-pass {
       display: flex;
-      flex-direction: row;
       margin-top: 2rem;
       background: rgba(255,255,255,0.8);
       border-radius: 12px;
+      border: 2px solid #a3a3a3;
       overflow: hidden;
-      border: 2px solid #a5b4fc;
+      position: relative;
     }
 
     .left, .right {
@@ -55,46 +51,63 @@
     }
 
     .left {
-      border-right: 2px dashed #94a3b8;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      border-right: 2px dashed #afafaf;
+      flex: 0.5;
     }
 
     .airline-logo {
-      font-size: 1.4rem;
+      font-size: 2rem;
       font-weight: bold;
-      color: #1e3a8a;
+      color: #00b600;
+    }
+
+    .slogan {
+      font-style: italic;
+      color: #585858;
+      margin: 0.3rem 0 1rem 0;
+      font-size: 15px;
+    }
+
+    .section {
+      margin-top: 1rem;
+    }
+
+    .black-box .section {
+      margin-top: 0rem;
       margin-bottom: 1rem;
-    }
-
-    .airline-logo::before {
-      content: "🛫 ";
-    }
-
-    .details {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      row-gap: 0.6rem;
-      column-gap: 1rem;
-      font-size: 1rem;
-    }
-
-    .details div {
-      font-weight: 600;
-      color: #1e293b;
     }
 
     .label {
       font-size: 0.8rem;
-      color: #64748b;
-      font-weight: 400;
+      color: #454545;
+    }
+
+    .value {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #1e293b;
+    }
+
+    .black-box {
+      border: 2px solid black;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      margin-right: 100px;
+    }
+
+    .barcode {
+      transform: rotate(270deg) translateX(140px);
+      transform-origin: left top;
+      margin-top: 2rem;
+      height: 106px;
+      position: absolute;
+      right: 0;
+      top: 1px;
+      transform-origin: 100% 100%;
     }
 
     .barcode img {
-      max-width: 100%;
-      height: auto;
-      margin-top: 1rem;
+      height: 100%;
     }
 
     .print-btn {
@@ -126,81 +139,54 @@
   <div class="container">
     <h1>🎟️ Luo oma boarding pass</h1>
     <form id="pass-form">
-      <input type="text" id="fname" placeholder="Etunimi" required>
-      <input type="text" id="lname" placeholder="Sukunimi" required>
-      <input type="text" id="seat" placeholder="Istumapaikka (esim. 14A)" required>
+      <input type="text" id="fname" placeholder="Etunimi">
+      <input type="text" id="lname" placeholder="Sukunimi">
+      <input type="text" id="departure" placeholder="Lähtöpaikka">
+      <input type="text" id="destination" placeholder="Saapumispaikka">
+      <input type="text" id="seat" placeholder="Istumapaikka">
+      <input type="text" id="terminal" placeholder="Terminaali">
+      <input type="text" id="class" placeholder="Luokka (esim. Economy)">
+      <input type="text" id="group" placeholder="Ryhmä">
+      <input type="text" id="gate" placeholder="Portti">
+      <input type="text" id="gateOpen" placeholder="Portti avautuu">
+      <input type="text" id="gateClose" placeholder="Portti sulkeutuu">
       <button type="submit" class="print-btn">Luo ja tulosta</button>
-      <a href="scanner">Siirry skaneeriin</a>
     </form>
 
     <div class="boarding-pass" id="boarding-pass" style="display:none">
       <div class="left">
-        <div>
-          <div class="airline-logo">Aurora Airlines</div>
-          <div class="details">
-            <div>
-              <div class="label">Nimi</div>
-              <div id="full-name"></div>
-            </div>
-            <div>
-              <div class="label">Istumapaikka</div>
-              <div id="seat-number"></div>
-            </div>
-            <div>
-              <div class="label">Lähtö</div>
-              <div>HEL</div>
-            </div>
-            <div>
-              <div class="label">Määränpää</div>
-              <div>JFK</div>
-            </div>
-            <div>
-              <div class="label">Portti</div>
-              <div>C7</div>
-            </div>
-            <div>
-              <div class="label">Aika</div>
-              <div>17:35</div>
-            </div>
-            <div>
-              <div class="label">Lento</div>
-              <div>AA421</div>
-            </div>
-            <div>
-              <div class="label">Lippu #</div>
-              <div id="ticket-number"></div>
-            </div>
-          </div>
-        </div>
-        <div class="barcode">
-          <img id="barcode-img" src="" alt="PDF417 Barcode">
-        </div>
+        <div class="airline-logo">KirvaAir</div>
+        <div class="slogan">Viemme sinne, missä pippuri kasvaa.</div>
+
+        <div class="section"><div class="label">Matkustajan nimi:</div><div class="value" id="full-name"></div></div>
+        <div class="section"><div class="label">Lähtöpaikka:</div><div class="value" id="display-departure"></div></div>
+        <div class="section"><div class="label">Saapumispaikka:</div><div class="value" id="display-destination"></div></div>
+        <div class="section"><div class="label">Lipun nro:</div><div class="value" id="ticket-number"></div></div>
       </div>
 
       <div class="right">
-        <div class="airline-logo" style="font-size:1.2rem;">Aurora ✦ Boarding</div>
-        <div class="details">
-          <div>
-            <div class="label">Matkustaja</div>
-            <div id="full-name-2"></div>
-          </div>
-          <div>
-            <div class="label">Istu.</div>
-            <div id="seat-number-2"></div>
-          </div>
-          <div>
-            <div class="label">Lento</div>
-            <div>AA421</div>
-          </div>
-          <div>
-            <div class="label">Portti</div>
-            <div>C7</div>
-          </div>
-          <div>
-            <div class="label">Aika</div>
-            <div>17:35</div>
+        <div style="display: flex; gap: 20px;">
+        <div class="section"><div class="label">Lento nro:</div><div class="value" id="flight-number"></div></div>
+        <div class="section"><div class="label">Terminaali:</div><div class="value" id="terminal-value"></div></div>
+        </div>
+        <div class="section"><div class="label">Luokka:</div><div class="value" id="class-value"></div></div>
+
+        <div class="black-box">
+          <div style="display: flex; gap: 20px;">
+          <div class="section"><div class="label">Portti:</div><div class="value" id="gate-value"></div></div>
+          <div class="section"><div class="label">Portti avautuu:</div><div class="value" id="gate-open-value"></div></div>
+          <div class="section"><div class="label">Portti sulkeutuu:</div><div class="value" id="gate-close-value"></div></div>
+        </div>
+
+        <div style="display: flex; gap: 20px;">
+          <div class="section"><div class="label">Istumapaikka:</div><div class="value" id="seat-number"></div></div>
+          <div class="section"><div class="label">Ryhmä:</div><div class="value" id="group-value"></div></div>
           </div>
         </div>
+      </div>
+
+      <div class="barcode">
+        <img id="barcode-img" src="" alt="PDF417 Barcode">
       </div>
     </div>
   </div>
@@ -209,19 +195,53 @@
     const form = document.getElementById('pass-form');
     const passDiv = document.getElementById('boarding-pass');
 
+    function randomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateRandomSeat() {
+      return Math.floor(Math.random() * 30 + 1) + randomItem(['A', 'B', 'C', 'D', 'E', 'F']);
+    }
+
+    function generateRandomCode(length = 4) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < length; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+
     form.addEventListener('submit', function(e) {
       e.preventDefault();
 
-      const fname = document.getElementById('fname').value.trim();
-      const lname = document.getElementById('lname').value.trim();
-      const seat = document.getElementById('seat').value.trim();
-      const ticket = 'AA' + Math.floor(100000 + Math.random() * 900000);
+      const fname = document.getElementById('fname').value.trim() || 'Matti';
+      const lname = document.getElementById('lname').value.trim() || 'Meikäläinen';
+      const departure = document.getElementById('departure').value.trim() || 'Helsinki';
+      const destination = document.getElementById('destination').value.trim() || 'Los Angeles';
+      const seat = document.getElementById('seat').value.trim() || generateRandomSeat();
+      const terminal = document.getElementById('terminal').value.trim() || randomItem(['1', '2', '3']);
+      const travelClass = document.getElementById('class').value.trim() || randomItem(['Economy', 'Business']);
+      const group = document.getElementById('group').value.trim() || randomItem(['A', 'B', 'C']);
+      const gate = document.getElementById('gate').value.trim() || Math.floor(Math.random() * 50 + 1);
+      const gateOpen = document.getElementById('gateOpen').value.trim() || '15:45';
+      const gateClose = document.getElementById('gateClose').value.trim() || '16:15';
 
-      document.getElementById('full-name').innerText = fname + ' ' + lname;
-      document.getElementById('full-name-2').innerText = fname + ' ' + lname;
+      const ticket = generateRandomCode(6);
+      const flight = generateRandomCode(4);
+
+      document.getElementById('full-name').innerText = `${fname} ${lname}`;
+      document.getElementById('display-departure').innerText = departure;
+      document.getElementById('display-destination').innerText = destination;
       document.getElementById('seat-number').innerText = seat;
-      document.getElementById('seat-number-2').innerText = seat;
       document.getElementById('ticket-number').innerText = ticket;
+      document.getElementById('flight-number').innerText = flight;
+      document.getElementById('terminal-value').innerText = 'TERMINAL ' + terminal;
+      document.getElementById('class-value').innerText = travelClass;
+      document.getElementById('group-value').innerText = group;
+      document.getElementById('gate-value').innerText = gate;
+      document.getElementById('gate-open-value').innerText = gateOpen;
+      document.getElementById('gate-close-value').innerText = gateClose;
 
       const barcodeData = encodeURIComponent(`${fname};${lname};${seat};${ticket}`);
       const barcodeUrl = `https://barcode.orcascan.com/?type=pdf417&data=${barcodeData}`;
